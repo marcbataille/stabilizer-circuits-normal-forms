@@ -8,7 +8,9 @@ The 'manual' mode of the command reproduces the induction steps of the  algorith
 The 'statistics' mode of the command allows to test the efficiency of the algorithm to reduce the gate count of a circuit.
 
 To launch the manual mode : ./stabnf N man
+
 To launch the manual mode : ./stabnf N stat
+
 Where N is the number of qubits (2 <= N <= 1000)
 
 
