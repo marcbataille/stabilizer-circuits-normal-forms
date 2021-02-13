@@ -54,7 +54,7 @@ void print_introduction_stat(void) {
   printf("\n========================   STATISTICS MODE   ==========================\n\n");    
   printf("Each random stabilizer circuit is build using the induction process described in theorem 5 of the paper.\n");
   printf("At each step of the induction process, a gate in the set {Phase, Hadamard, CNOT} is chosen according to the following probability law :\n ");
-  printf("p(CNOT) = PROBABILITY/100, p(Hadamard)= p(Phase)=(1-PROBABILITY/100)/2, where PROBABILTY is an integer constant (between 0 and 100) defined in the main.c file.\n");
+  printf("p(CNOT) = PROBABILITY/100, p(Hadamard)= p(Phase)=(1-PROBABILITY/100)/2, where PROBABILTY is an integer constant (between 0 and 100) defined in the constants.h file.\n");
   printf("The default value for PROBABILITY is 80.\n\n");
 }
 
