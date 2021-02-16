@@ -7,11 +7,10 @@ To compile the code just use the 'make' command : this creates the 'stabnf' comm
 The 'manual' mode of the command reproduces the induction steps of the  algorithm.
 The 'statistics' mode of the command allows to test the efficiency of the algorithm to reduce the gate count of a circuit.
 
-To launch the manual mode : ./stabnf N man
+Let n be the number of qubits of the circuits (2 <= n <= 1000).
+To launch the manual mode : ./stabnf n man
+To launch the statistics mode : ./stabnf n stat
 
-To launch the manual mode : ./stabnf N stat
-
-Where N is the number of qubits (2 <= N <= 1000)
 
 
 
