@@ -378,16 +378,25 @@ int main(int argc, char **argv){
 	sum_cz_red_2q += cz_red_2q_len;
       }
       printf("\n********************************************************************************");
-      printf("\n*    STATISTICS FOR A SAMPLE OF %3ld STABILIZER CIRCUITS (%3ld-QUBIT REGISTER)   *", sample_size, n);
+      printf("\n*    STATISTICS FOR A SAMPLE OF %3ld STABILIZER CIRCUITS (%3ld-QUBIT REGISTER)   *",
+	     sample_size, n);
       printf("\n********************************************************************************"); 
       printf("\n*                   *       ALL GATES COUNT     *     2-QUBIT GATES COUNT      *");
       printf("\n********************************************************************************"); 
-      printf("\n* INPUT CIRCUIT     *     %6ld -->   100%%     *     %6.0lf -->   100%%        *", input_len, (double)sum_input_2q/(double)sample_size);
+      printf("\n* INPUT CIRCUIT     *     %6ld -->   100%%     *     %6.0lf -->   100%%        *",
+	     input_len, (double)sum_input_2q/(double)sample_size);
       printf("\n********************************************************************************"); 
-      printf("\n* NF CIRCUIT        *     %6.0lf --> %5.1lf%%     *     %6.0lf --> %5.1lf%%        *", (double)sum_nf/(double)sample_size, (double)sum_nf/(double)sample_size*100./(double)input_len, (double)sum_nf_2q/(double)sample_size, sum_input_2q ? (double)sum_nf_2q/(double)sum_input_2q * 100. : 100.);
+      printf("\n* NF CIRCUIT        *     %6.0lf --> %5.1lf%%     *     %6.0lf --> %5.1lf%%        *",
+	     (double)sum_nf/(double)sample_size,
+	     (double)sum_nf/(double)sample_size*100./(double)input_len,
+	     (double)sum_nf_2q/(double)sample_size,
+	     sum_input_2q ? (double)sum_nf_2q/(double)sum_input_2q * 100. : 100.);
       printf("\n********************************************************************************"); 
       printf("\n* CZ-RED NF CIRCUIT *     %6.0lf --> %5.1lf%%     *     %6.0lf --> %5.1lf%%        *",
-	     (double)sum_cz_red/(double)sample_size, (double)sum_cz_red/(double)sample_size*100./(double)input_len, (double)sum_cz_red_2q/(double)sample_size, sum_input_2q ? (double)sum_cz_red_2q/(double)sum_input_2q * 100. : 100.);
+	     (double)sum_cz_red/(double)sample_size,
+	     (double)sum_cz_red/(double)sample_size*100./(double)input_len,
+	     (double)sum_cz_red_2q/(double)sample_size,
+	     sum_input_2q ? (double)sum_cz_red_2q/(double)sum_input_2q * 100. : 100.);
       printf("\n********************************************************************************"); 
       
       printf("\nEnter \'c\' for a new sample or \'q\' to quit program.\n--> ");
