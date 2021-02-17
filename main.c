@@ -67,7 +67,7 @@ int main(int argc, char **argv){
   
   /* Memory allocation for a product of P, CZ and CNOT gates.
      This product is an input of the C_to_PZX algorithm in cases 2.2.1 and 3.4.1 (see paper) */
-  long max_PZX = n*(n-1)/2 + 2*(n-1); // the length of this circuit is alway less than max_PZX (see paper)
+  long max_PZX = n*(n-1)/2 + 3*(n-1); // the length of this circuit is alway less than max_PZX (see paper)
   gate_prod *PZX_prod = (gate_prod *)malloc(sizeof(gate_prod));
   PZX_prod -> g = (gate *) calloc((unsigned long)max_PZX, sizeof(gate));
   
@@ -317,92 +317,92 @@ int main(int argc, char **argv){
   case statistics :
     print_introduction_stat();    
     while (q_or_c[0] == 'c') {
-    printf("Enter the number of random stabilizer circuits in your sample and the length of the circuits.\n");
-    printf("\nSample size (max %d) ? ", MAX_SAMPLE);
-    while (scanf("%ld", &sample_size) != 1) { 
-    while (getchar() != '\n'); 
-    printf("Please, try again.\n");
-  }
-    while (getchar() != '\n');
-    if (sample_size > MAX_SAMPLE || sample_size < 1) {
-    printf("Invalid value.\n");
-    break;
-  }
-    printf("Sample size --> %ld\n", sample_size);
-    printf("\nCircuit length (max %d) ? ", MAX_LENGTH);
-    while(scanf("%ld", &input_len) != 1) { 
-    while (getchar() != '\n'); 
-    printf("Please, try again.\n");
-  }
-    while (getchar() != '\n');
-    if (input_len > MAX_LENGTH || input_len < 1) {
-    printf("Invalid value.\n");
-    break;
-  }
-    printf("Circuit length --> %lu\n", input_len);
-
-    sum_nf = 0;
-    sum_nf_2q = 0;
-    sum_cz_red = 0;
-    sum_cz_red_2q = 0;
-    sum_input_2q = 0;
-    srandom((unsigned int)time(NULL));
-    for (s = 0; s < sample_size; ++s) {
-    initialize_nf(nf);
-    input_2q_len = 0;
-    for (t = 0; t < input_len; ++t) {
-    if (random() % 100 < PROBABILITY) { // CNOT chosen
-    i = random() % n;
-    j = random() % (n-1);
-    if (j >= i) ++j;
-    merge_CNOTij_with_nf(i, j, nf, PZX, PZX_prod, CNOT_prod);
-    input_2q_len += 1;
-  } else if (random() % 100 < 50) { // P chosen
-    i = random() % n;
-    merge_Pi_with_nf(i, nf, PZX, PZX_prod, CNOT_prod);
-  } else { // H chosen
-    i = random() % n;
-    merge_Hi_with_nf(i, nf);
-  }
-  }
-    initialize_red_nf(red_nf, nf);
-    simplify_nf(nf);
-    compute_red_nf(red_nf, PZX, A_red_D_prod, A_red_B_prod, CNOT_prod, A_red_D_inv, A_red_B_inv, A_aux);
-    simplify_red_nf(red_nf);
-    count_gate_nf(nf, CNOT_prod, A_aux, &nf_len, &nf_2q_len );
-    count_gate_cz_red(red_nf, CNOT_prod, A_aux, &cz_red_len, &cz_red_2q_len );
-    sum_input_2q += input_2q_len;
-    sum_nf += nf_len;
-    sum_nf_2q += nf_2q_len;
-    sum_cz_red += cz_red_len;
-    sum_cz_red_2q += cz_red_2q_len;
-  }
-    printf("\n********************************************************************************");
-    printf("\n*    STATISTICS FOR A SAMPLE OF %3ld STABILIZER CIRCUITS (%3ld-QUBIT REGISTER)   *", sample_size, n);
-    printf("\n********************************************************************************"); 
-    printf("\n*                   *       ALL GATES COUNT     *     2-QUBIT GATES COUNT      *");
-    printf("\n********************************************************************************"); 
-    printf("\n* INPUT CIRCUIT     *     %6ld -->   100%%     *     %6.0lf -->   100%%        *", input_len, (double)sum_input_2q/(double)sample_size);
-    printf("\n********************************************************************************"); 
-    printf("\n* NF CIRCUIT        *     %6.0lf --> %5.1lf%%     *     %6.0lf --> %5.1lf%%        *", (double)sum_nf/(double)sample_size, (double)sum_nf/(double)sample_size*100./(double)input_len, (double)sum_nf_2q/(double)sample_size, ((double)sum_nf_2q/(double)sample_size)/((double)sum_input_2q/(double)sample_size)*100.);
-    printf("\n********************************************************************************"); 
-    printf("\n* CZ-RED NF CIRCUIT *     %6.0lf --> %5.1lf%%     *     %6.0lf --> %5.1lf%%        *",
-      (double)sum_cz_red/(double)sample_size, (double)sum_cz_red/(double)sample_size*100./(double)input_len, (double)sum_cz_red_2q/(double)sample_size, ((double)sum_cz_red_2q/(double)sample_size)/((double)sum_input_2q/(double)sample_size)*100.);
-    printf("\n********************************************************************************"); 
-    
-    printf("\nEnter \'c\' for a new sample or \'q\' to quit program.\n--> ");
-    sf=scanf("%1s", q_or_c);
-    while (getchar() != '\n');
-    while (q_or_c[0] != 'c' && q_or_c[0] != 'q') {
-    printf("Enter \'c\' to scan another circuit or \'q\' to quit program.\n--> ");
-    sf=scanf("%1s",q_or_c);
-    while (getchar() != '\n');
-  }
-  }
+      printf("Enter the number of random stabilizer circuits in your sample and the length of the circuits.\n");
+      printf("\nSample size (max %d) ? ", MAX_SAMPLE);
+      while (scanf("%ld", &sample_size) != 1) { 
+	while (getchar() != '\n'); 
+	printf("Please, try again.\n");
+      }
+      while (getchar() != '\n');
+      if (sample_size > MAX_SAMPLE || sample_size < 1) {
+	printf("Invalid value.\n");
+	break;
+      }
+      printf("Sample size --> %ld\n", sample_size);
+      printf("\nCircuit length (max %d) ? ", MAX_LENGTH);
+      while(scanf("%ld", &input_len) != 1) { 
+	while (getchar() != '\n'); 
+	printf("Please, try again.\n");
+      }
+      while (getchar() != '\n');
+      if (input_len > MAX_LENGTH || input_len < 1) {
+	printf("Invalid value.\n");
+	break;
+      }
+      printf("Circuit length --> %lu\n", input_len);
+      
+      sum_nf = 0;
+      sum_nf_2q = 0;
+      sum_cz_red = 0;
+      sum_cz_red_2q = 0;
+      sum_input_2q = 0;
+      srandom((unsigned int)time(NULL));
+      for (s = 0; s < sample_size; ++s) {
+	initialize_nf(nf);
+	input_2q_len = 0;
+	for (t = 0; t < input_len; ++t) {
+	  if (random() % 100 < PROBABILITY) { // CNOT chosen
+	    i = random() % n;
+	    j = random() % (n-1);
+	    if (j >= i) ++j;
+	    merge_CNOTij_with_nf(i, j, nf, PZX, PZX_prod, CNOT_prod);
+	    input_2q_len += 1;
+	  } else if (random() % 100 < 50) { // P chosen
+	    i = random() % n;
+	    merge_Pi_with_nf(i, nf, PZX, PZX_prod, CNOT_prod);
+	  } else { // H chosen
+	    i = random() % n;
+	    merge_Hi_with_nf(i, nf);
+	  }
+	}
+	initialize_red_nf(red_nf, nf);
+	simplify_nf(nf);
+	compute_red_nf(red_nf, PZX, A_red_D_prod, A_red_B_prod, CNOT_prod, A_red_D_inv, A_red_B_inv, A_aux);
+	simplify_red_nf(red_nf);
+	count_gate_nf(nf, CNOT_prod, A_aux, &nf_len, &nf_2q_len );
+	count_gate_cz_red(red_nf, CNOT_prod, A_aux, &cz_red_len, &cz_red_2q_len );
+	sum_input_2q += input_2q_len;
+	sum_nf += nf_len;
+	sum_nf_2q += nf_2q_len;
+	sum_cz_red += cz_red_len;
+	sum_cz_red_2q += cz_red_2q_len;
+      }
+      printf("\n********************************************************************************");
+      printf("\n*    STATISTICS FOR A SAMPLE OF %3ld STABILIZER CIRCUITS (%3ld-QUBIT REGISTER)   *", sample_size, n);
+      printf("\n********************************************************************************"); 
+      printf("\n*                   *       ALL GATES COUNT     *     2-QUBIT GATES COUNT      *");
+      printf("\n********************************************************************************"); 
+      printf("\n* INPUT CIRCUIT     *     %6ld -->   100%%     *     %6.0lf -->   100%%        *", input_len, (double)sum_input_2q/(double)sample_size);
+      printf("\n********************************************************************************"); 
+      printf("\n* NF CIRCUIT        *     %6.0lf --> %5.1lf%%     *     %6.0lf --> %5.1lf%%        *", (double)sum_nf/(double)sample_size, (double)sum_nf/(double)sample_size*100./(double)input_len, (double)sum_nf_2q/(double)sample_size, sum_input_2q ? (double)sum_nf_2q/(double)sum_input_2q * 100. : 100.);
+      printf("\n********************************************************************************"); 
+      printf("\n* CZ-RED NF CIRCUIT *     %6.0lf --> %5.1lf%%     *     %6.0lf --> %5.1lf%%        *",
+	     (double)sum_cz_red/(double)sample_size, (double)sum_cz_red/(double)sample_size*100./(double)input_len, (double)sum_cz_red_2q/(double)sample_size, sum_input_2q ? (double)sum_cz_red_2q/(double)sum_input_2q * 100. : 100.);
+      printf("\n********************************************************************************"); 
+      
+      printf("\nEnter \'c\' for a new sample or \'q\' to quit program.\n--> ");
+      sf=scanf("%1s", q_or_c);
+      while (getchar() != '\n');
+      while (q_or_c[0] != 'c' && q_or_c[0] != 'q') {
+	printf("Enter \'c\' to scan another circuit or \'q\' to quit program.\n--> ");
+	sf=scanf("%1s",q_or_c);
+	while (getchar() != '\n');
+      }
+    }
     /* end of case statistics */
     break;
   } // end of switch
-    printf("Exiting program.\n");
+  printf("Exiting program.\n");
   
   /* free memory for input circuit */
   free(input);
