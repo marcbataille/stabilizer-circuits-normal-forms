@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "constants.h"
 #include "gate_struct.h"
@@ -315,7 +316,8 @@ int main(int argc, char **argv){
     break;
 
   case statistics :
-    print_introduction_stat();    
+    print_introduction_stat();
+    double limit = 3.*(double)n*(double)n/log((double)n);
     while (q_or_c[0] == 'c') {
       printf("Enter the number of random stabilizer circuits in your sample and the length of the circuits.\n");
       printf("\nSample size (max %d) ? ", MAX_SAMPLE);
@@ -376,6 +378,7 @@ int main(int argc, char **argv){
 	sum_nf_2q += nf_2q_len;
 	sum_cz_red += cz_red_len;
 	sum_cz_red_2q += cz_red_2q_len;
+	printf("CIRCUIT %ld : 2-qubit gate count is %.2lf %% of 3*n^2/log(n)\n", s+1, (double)cz_red_2q_len / limit * 100.); 
       }
       printf("\n********************************************************************************");
       printf("\n*    STATISTICS FOR A SAMPLE OF %3ld STABILIZER CIRCUITS (%3ld-QUBIT REGISTER)   *",
