@@ -231,48 +231,58 @@ void pauli_conj_h(int *u, int *v, long n) {
 
 void reduce_CZ(int **B, gate_prod *A_red_B_prod, long n) {
   long len = 0;
-  long r, c, cc, row, col, pivot;
+  long r, c, cc, row, col, p;
+  int pivot[n];
+  for (r = 0; r < n; ++r){
+    pivot[r]=0;
+  }
   for (c = 0; c < n; ++c) {
-    pivot = -1;
+    if (pivot[c]) {
+      continue;
+    }
+    p = -1;
     for (r = 0; r < n; ++r) {
       if (B[r][c] == 1) {
-	pivot = r;
+	p = r;
 	break;
       }
     }
-    if (pivot >= 0) {
-      for (r = pivot + 1; r < n; ++r) {
-	if (B[r][c] == 1) {
-	  for (col = 0; col < n; ++col) {
-	    B[r][col] = (B[r][col] + B[pivot][col]) % 2; 
-	  }
-	  for (row = 0; row < n; ++row) {
-	    B[row][r] = (B[row][r] + B[row][pivot]) % 2; 
-	  }
-	  A_red_B_prod -> g[len].type = CNOT;
-	  A_red_B_prod -> g[len].q_i = r;
-	  A_red_B_prod -> g[len].q_j = pivot;
-	  ++ len;
+    if (p<0) {
+      continue;
+    }
+    pivot[p]=1;
+    for (r = p + 1; r < n; ++r) {
+      if (B[r][c] == 1) {
+	for (col = 0; col < n; ++col) {
+	  B[r][col] = (B[r][col] + B[p][col]) % 2; 
 	}
+	for (row = 0; row < n; ++row) {
+	  B[row][r] = (B[row][r] + B[row][p]) % 2; 
+	}
+	A_red_B_prod -> g[len].type = CNOT;
+	A_red_B_prod -> g[len].q_i = r;
+	A_red_B_prod -> g[len].q_j = p;
+	++ len;
       }
-      for (cc = c + 1; cc < n; ++cc) {
-	if (B[pivot][cc] == 1) {
-	  for (row = 0; row < n; ++row) {
-	    B[row][cc] = (B[row][cc] + B[row][c]) % 2; 
-	  }
-	  for (col = 0; col < n; ++col) {
-	    B[cc][col] = (B[cc][col] + B[c][col]) % 2; 
-	  }
-	  A_red_B_prod -> g[len].type = CNOT;
-	  A_red_B_prod -> g[len].q_i = cc;
-	  A_red_B_prod -> g[len].q_j = c;
-	  ++ len;
+    }
+    for (cc = c + 1; cc < n; ++cc) {
+      if (B[p][cc] == 1) {
+	for (row = 0; row < n; ++row) {
+	  B[row][cc] = (B[row][cc] + B[row][c]) % 2; 
 	}
+	for (col = 0; col < n; ++col) {
+	  B[cc][col] = (B[cc][col] + B[c][col]) % 2; 
+	}
+	A_red_B_prod -> g[len].type = CNOT;
+	A_red_B_prod -> g[len].q_i = cc;
+	A_red_B_prod -> g[len].q_j = c;
+	++ len;
       }
     }
   }
-  transpose_CNOT_prod(A_red_B_prod, 0, len - 1); 
   A_red_B_prod -> len = len;
+  transpose_CNOT_prod(A_red_B_prod, 0, len - 1); 
+  invert_CNOT_prod(A_red_B_prod);
 }
 
 /* red_nf is initialized from nf after applying the C-to-NF algorithm (see paper) */

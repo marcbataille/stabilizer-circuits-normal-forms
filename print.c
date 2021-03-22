@@ -51,10 +51,11 @@ void print_instructions_man(long n) {
  }
 
 void print_introduction_stat(void) {
-  printf("\n========================   STATISTICS MODE   ==========================\n\n");    
-  printf("Each random stabilizer circuit is build using the induction process described in theorem 5 of the paper.\n");
-  printf("At each step of the induction process, a gate in the set {Phase, Hadamard, CNOT} is chosen according to the following probability law :\n ");
-  printf("p(CNOT) = PROBABILITY/100, p(Hadamard)= p(Phase)=(1-PROBABILITY/100)/2, where PROBABILTY is an integer constant (between 0 and 100) defined in the constants.h file.\n");
+  printf("\n========================  STATISTICS MODE  ============================\n\n");    
+  printf("Normal forms are build using the induction process described in theorem 5 of the paper.\n");
+  printf("At each step of the induction process, a gate in the set {Phase, Hadamard, CNOT} is chosen according to the probability law :\n ");
+  printf("p(CNOT) = PROBABILITY/100, p(Hadamard)= p(Phase)=(1-PROBABILITY/100)/2, \n");
+  printf("where PROBABILTY is an integer constant (between 0 and 100) defined in the constants.h file.\n");
   printf("The default value for PROBABILITY is 80.\n\n");
 }
 
@@ -202,7 +203,7 @@ long n = red_nf -> n;
     for (c = 0; c < n/2 - offset; ++c) {
       printf("  ");
     }
-    printf("A1");
+    printf("A2");
     for (c = 0; c < n/2; ++c) {
       printf("  ");
     }
@@ -288,7 +289,7 @@ void print_input(gate_prod  *input, long n) {
       break;
     case CNOT : printf("CNOT[%ld,%ld]--", input -> g[pos].q_i, input -> g[pos].q_j);
       break;
-    case CZ : printf("CZ[{%ld,%ld}--", input -> g[pos].q_i, input -> g[pos].q_j);
+    case CZ : printf("CZ{%ld,%ld}--", input -> g[pos].q_i, input -> g[pos].q_j);
       break;
     case SWAP : printf("SWAP{%ld,%ld}--", input -> g[pos].q_i, input -> g[pos].q_j);
       break;
@@ -461,4 +462,79 @@ void print_circuit_red_nf(CZ_red_normal_form *red_nf, gate_prod *CNOT_prod, int 
     }
   }
   printf("(%ld gates, phase = %d*Pi/4)\n", len, red_nf -> k);
+}
+
+void print_stabilizer_state(int *u, int *v, int *w, int **B, long n) {
+  int is_identity = 1;
+  printf("\n---------------------------------------  STABILIZER STATE AND GRAPH STATE  ----------------------------------------\n");
+  printf("\nThe stabilizer state |S> resulting from applying your circuit to the state |0...O> is |S> = H Z P |G> ,  where :\n\n");
+  printf("H = ");
+  for (long i = 0; i < n; ++i) {
+    if (u[i]) {
+      printf("H%ld ",i);
+      is_identity = 0;
+    }
+  }
+  if (is_identity) {
+    printf("Id");
+  }
+  is_identity = 1;
+  printf("\n\nZ = ");
+  for (long i = 0; i < n; ++i) {
+    if (v[i]) {
+      printf("H%ld ",i);
+      is_identity = 0;
+    }
+  }
+  if (is_identity) {
+    printf("Id");
+  }
+  is_identity = 1;
+  printf("\n\nP = ");
+  for (long i = 0; i < n; ++i) {
+    if (w[i]) {
+      printf("H%ld ",i);
+      is_identity = 0;
+    }
+  }
+  if (is_identity) {
+    printf("Id");
+  }
+  //printf("\n\nG is the graph of matrix\n");
+  //print_matrix(B,n);
+  printf("\n\n|G> is the graph state such that G = { ");
+  for (long i = 0; i < n; ++i) {
+    for (long j = i + 1; j < n; ++j) {
+      if (B[i][j]) {
+	printf("{%ld,%ld},",i,j);
+      }
+    }
+  }
+  printf("\b }\n");
+}
+  
+void print_graph_state(CZ_red_normal_form *red_nf, gate_prod *CNOT_prod, int **A_aux) {
+  long n = red_nf -> n;
+  int vec[n];
+  matrix_cp(red_nf -> A1, A_aux, n);
+  decompose_GL_matrix(A_aux, CNOT_prod, n);
+  compute_A_inv(A_aux, CNOT_prod, n);    
+  compute_qB_of_A(red_nf -> D_red, A_aux, vec, n);
+  printf("\n|G> = ");
+  for (long r = 0; r < n; ++r) {
+    if (vec[r]) {
+      printf("Z%ld ", r);
+    }
+  }
+  for (long pos = 0; pos < CNOT_prod -> len; ++pos){
+    printf("CNOT[%ld,%ld] ", CNOT_prod -> g[pos].q_i, CNOT_prod -> g[pos].q_j);
+  }
+  for (long r = 0; r < n; ++r) {
+    for (long c = r + 1; c < n; ++c) {
+      if (red_nf -> D_red[r][c]) {
+	printf("CZ{%ld,%ld} ", r, c);
+      }
+    }
+  }
+  printf("|+...+>\n");
 }

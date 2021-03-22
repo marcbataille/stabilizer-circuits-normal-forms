@@ -364,16 +364,13 @@ void merge_CZij_with_nf(long i, long j, normal_form *nf, PZX_form *PZX, gate_pro
   merge_Hi_with_nf(i, nf);
 }
 
-/* Zi = (Xji Hj)^4 */
+/* Zi = Pi^2 */
 void merge_Zi_with_nf(long i, normal_form *nf, PZX_form *PZX, gate_prod *PZX_prod, gate_prod *CNOT_prod) {
-  long j = (i == 0);
-  for (int k = 0; k < 4; ++k){
-    merge_Hi_with_nf(j, nf);
-    merge_CNOTij_with_nf(j, i, nf, PZX, PZX_prod, CNOT_prod);
-  }
+  merge_Pi_with_nf(i, nf, PZX, PZX_prod, CNOT_prod );
+  merge_Pi_with_nf(i, nf, PZX, PZX_prod, CNOT_prod );
 }
 
-/* X = HZH */
+/* X_i = H_i Z_i H_i */
 void merge_Xi_with_nf(long i, normal_form *nf, PZX_form *PZX, gate_prod *PZX_prod, gate_prod *CNOT_prod) {
   merge_Hi_with_nf(i, nf);
   merge_Zi_with_nf(i, nf, PZX, PZX_prod, CNOT_prod);

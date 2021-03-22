@@ -22,3 +22,7 @@ void print_input(gate_prod  *input, long n);
 void print_circuit_nf(normal_form *nf, gate_prod *CNOT_prod, int **A_aux);
 
 void print_circuit_red_nf(CZ_red_normal_form *red_nf, gate_prod *CNOT_prod, int **A_aux);
+
+void print_stabilizer_state(int *u, int *v, int *w, int **B, long n);
+
+void print_graph_state(CZ_red_normal_form *red_nf, gate_prod *A_red_D_prod, int **A_red_D_inv);
