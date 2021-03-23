@@ -482,7 +482,7 @@ void print_stabilizer_state(int *u, int *v, int *w, int **B, long n) {
   printf("\n\nZ = ");
   for (long i = 0; i < n; ++i) {
     if (v[i]) {
-      printf("H%ld ",i);
+      printf("Z%ld ",i);
       is_identity = 0;
     }
   }
@@ -493,7 +493,7 @@ void print_stabilizer_state(int *u, int *v, int *w, int **B, long n) {
   printf("\n\nP = ");
   for (long i = 0; i < n; ++i) {
     if (w[i]) {
-      printf("H%ld ",i);
+      printf("P%ld ",i);
       is_identity = 0;
     }
   }
