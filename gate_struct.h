@@ -1,6 +1,7 @@
 
 /* gates */
 enum gate_list {P, H, CNOT, CZ, SWAP, X, Y, Z};
+
 struct gate_t {
   enum gate_list type;
   long q_i; 
@@ -42,26 +43,14 @@ struct normal_form_t {
   int **B;
   int **A;
 } ;
-
 typedef struct normal_form_t normal_form;
 
-/* CZ-reduced normal form of a stabilizer circuit :
-   H_a * P_d * X_A1 * Z_D_red * H_w * exp(i*k*Pi/4) * x_u * z_v * X_A2 * Z_B_red * X_A3 * P_b */
-
-struct CZ_red_normal_form_t {
+struct graph_state_t {
   long n;
-  int *a; // alpha in the paper
-  int *d;
-  int **A1;
-  int **D_red;
-  int *w; // omega in the paper
-  int k; // global phase phi is k*Pi/4
-  int *u;
-  int *v;
-  int **A2;
+  int **B;
   int **B_red;
-  int **A3;
-  int *b;
-} ;
-
-typedef struct CZ_red_normal_form_t CZ_red_normal_form;
+  int **A;
+  int **A_inv;
+  int *v;
+};
+typedef struct graph_state_t graph_state;

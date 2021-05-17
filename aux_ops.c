@@ -229,7 +229,7 @@ void pauli_conj_h(int *u, int *v, long n) {
   }
 }
 
-void reduce_CZ(int **B, gate_prod *A_red_B_prod, long n) {
+void reduce_CZ(int **B, gate_prod *CNOT_prod, long n) {
   long len = 0;
   long r, c, cc, row, col, p;
   int pivot[n];
@@ -259,9 +259,9 @@ void reduce_CZ(int **B, gate_prod *A_red_B_prod, long n) {
 	for (row = 0; row < n; ++row) {
 	  B[row][r] = (B[row][r] + B[row][p]) % 2; 
 	}
-	A_red_B_prod -> g[len].type = CNOT;
-	A_red_B_prod -> g[len].q_i = r;
-	A_red_B_prod -> g[len].q_j = p;
+	CNOT_prod -> g[len].type = CNOT;
+	CNOT_prod -> g[len].q_i = r;
+	CNOT_prod -> g[len].q_j = p;
 	++ len;
       }
     }
@@ -273,41 +273,19 @@ void reduce_CZ(int **B, gate_prod *A_red_B_prod, long n) {
 	for (col = 0; col < n; ++col) {
 	  B[cc][col] = (B[cc][col] + B[c][col]) % 2; 
 	}
-	A_red_B_prod -> g[len].type = CNOT;
-	A_red_B_prod -> g[len].q_i = cc;
-	A_red_B_prod -> g[len].q_j = c;
+	CNOT_prod -> g[len].type = CNOT;
+	CNOT_prod -> g[len].q_i = cc;
+	CNOT_prod -> g[len].q_j = c;
 	++ len;
       }
     }
   }
-  A_red_B_prod -> len = len;
-  transpose_CNOT_prod(A_red_B_prod, 0, len - 1); 
-  invert_CNOT_prod(A_red_B_prod);
+  CNOT_prod -> len = len;
+  transpose_CNOT_prod(CNOT_prod, 0, len - 1); 
+  invert_CNOT_prod(CNOT_prod);
 }
 
-/* red_nf is initialized from nf after applying the C-to-NF algorithm (see paper) */
-void initialize_red_nf(CZ_red_normal_form *red_nf, normal_form *nf) {
-  long r, c;
-  long n = red_nf -> n;
-  red_nf -> k = nf -> k;
-  vector_cp(nf -> a, red_nf -> a, n);
-  vector_cp(nf -> w, red_nf -> w, n);
-  vector_cp(nf -> d, red_nf -> d, n);
-  vector_cp(nf -> b, red_nf -> b, n);
-  vector_cp(nf -> u, red_nf -> u, n);
-  vector_cp(nf -> v, red_nf -> v, n);
-  matrix_cp(nf -> D, red_nf -> D_red, n);
-  matrix_cp(nf -> B, red_nf -> B_red, n);
-  matrix_cp(nf -> A, red_nf -> A2, n);
-  for (r = 0; r < n; ++r) {
-    for (c = 0; c < n; ++c) {
-      red_nf -> A1[r][c] = 0;
-      red_nf -> A3[r][c] = 0;
-    }
-    red_nf -> A1[r][r] = 1;
-    red_nf -> A3[r][r] = 1;
-  }
-}
+
 
 void compute_A_inv(int **A_inv, gate_prod *A_prod, long n){
   /* initialize matrix A_inv to identity */
@@ -324,6 +302,24 @@ void compute_A_inv(int **A_inv, gate_prod *A_prod, long n){
     left_mult_by_trans(A_inv, A_prod -> g[pos].q_i, A_prod -> g[pos].q_j, n);
   }
 }
+
+void compute_A(int **A, gate_prod *A_prod, long n){
+  /* initialize matrix A to identity */
+  long r, c;
+  long pos;
+  for (r = 0; r < n; ++r) {
+    for (c = 0; c < n; ++c) {
+      A[r][c]=0;
+    }
+    A[r][r]=1;
+  }
+  /* multiply A by the product of CNOT gates */
+  for(pos = A_prod -> len - 1; pos >= 0; --pos) {
+    left_mult_by_trans(A, A_prod -> g[pos].q_i, A_prod -> g[pos].q_j, n);
+  }
+}
+
+
 
 void compute_qB_of_A(int **B, int **A, int *vec, long n){
   long c, row, col;
@@ -405,146 +401,21 @@ void decompose_GL_matrix(int **A, gate_prod *CNOT_prod, long n) {
   transpose_CNOT_prod(CNOT_prod, start, end);
 }
 
-void count_gate_nf(normal_form *nf, gate_prod *CNOT_prod, int **A_aux, long *nf_len, long *nf_2q_len ) {
-  long n = nf -> n;
+
+void count_gate_gs(graph_state *gs, gate_prod *CNOT_prod, int **A_aux, long *gs_2q_len ) {
   long r, c;
-  int ok;
-  int a_aux [n];
-  int w_aux [n];
-  *nf_len = 0;
-  *nf_2q_len = 0;
-  vector_cp(nf -> a, a_aux, n);
-  vector_cp(nf -> w, w_aux, n);
-  /* simplify the Hadamard gates for printing */
-  for (r = 0; r < n; ++r) {
-    if (nf -> a[r] == 1 && nf -> d[r] == 0) {
-      ok = 1;
-      for(c = 0; c < n; ++c) {
-	if (nf -> D[r][c] != 0) {
-	  ok = 0;
-	  break;
-	}
-      }
-      if (ok) {
-	a_aux[r] = 0;
-	w_aux[r] = 0;
-      }
-    }
-  }
-  matrix_cp(nf -> A, A_aux, n);
+  long n = gs -> n;
+  *gs_2q_len = 0;
+  matrix_cp(gs -> A, A_aux, n);
   decompose_GL_matrix(A_aux, CNOT_prod, n);
-  *nf_len += CNOT_prod -> len;
-  *nf_2q_len += CNOT_prod -> len;
+  *gs_2q_len += CNOT_prod -> len;
   for (r = 0; r < n; ++r) {
     for (c = r + 1; c < n; ++c) { 
-      if (nf -> B[r][c]) {
-	*nf_len += 1;
-	*nf_2q_len += 1; 
-      }
-    }
-  }
-  for (r = 0; r < n; ++r) {
-    if (nf -> b[r]) {
-      *nf_len += 1;
-    }
-  }
-  for (r = 0; r < n; ++r) {
-    if (nf -> v[r]) {
-      *nf_len += 1;
-    }
-  }
-  for (r = 0; r < n; ++r) {
-    if (nf -> u[r]) {
-      *nf_len += 1;
-    }
-  }
-  for (r = 0; r < n; ++r) {
-    if (w_aux[r]) {
-      *nf_len += 1;
-    }
-  }
-  for (r = 0; r < n; ++r) {
-    for (c = r + 1; c < n; ++c) { 
-      if (nf -> D[r][c]) {
-	*nf_len += 1;
-	*nf_2q_len += 1;
-      }
-    }
-  }
-  for (r = 0; r < n; ++r) {
-    if (nf -> d[r]) {
-      *nf_len += 1;
-    }
-  }
-  for (r = 0; r < n; ++r) {
-    if (a_aux[r]) {
-      *nf_len += 1;
+      	*gs_2q_len += gs -> B_red[r][c];
     }
   }
 }
 
 
-void count_gate_cz_red(CZ_red_normal_form *red_nf, gate_prod *CNOT_prod, int **A_aux, long *cz_red_len, long *cz_red_2q_len ) {
-  long r, c;
-  long n = red_nf -> n;
-  *cz_red_len = 0; 
-  *cz_red_2q_len = 0;
-  for (r = 0; r < n; ++r) {
-    if (red_nf -> b[r]) {
-      *cz_red_len += 1;
-    }
-  }
-  matrix_cp(red_nf -> A3, A_aux, n);
-  decompose_GL_matrix(A_aux, CNOT_prod, n);
-  *cz_red_len += CNOT_prod -> len;
-  *cz_red_2q_len += CNOT_prod -> len;
-  for (r = 0; r < n; ++r) {
-    for (c = r + 1; c < n; ++c) { 
-      if (red_nf -> B_red[r][c]) {
-	*cz_red_len += 1;
-	*cz_red_2q_len += 1;
-      }
-    }
-  }
-  matrix_cp(red_nf -> A2, A_aux, n);
-  decompose_GL_matrix(A_aux, CNOT_prod, n);
-  *cz_red_len += CNOT_prod -> len;
-  *cz_red_2q_len += CNOT_prod -> len;
-  for (r = 0; r < n; ++r) {
-    if (red_nf -> v[r]) {
-      *cz_red_len += 1;
-    }
-  }
-  for (r = 0; r < n; ++r) {
-    if (red_nf -> u[r]) {
-      *cz_red_len += 1;
-    }
-  }
-  for (r = 0; r < n; ++r) {
-    if (red_nf -> w[r]) {
-      *cz_red_len += 1;
-    }
-  }
-  for (r = 0; r < n; ++r) {
-    for (c = r + 1; c < n; ++c) { 
-      if (red_nf -> D_red[r][c]) {
-	*cz_red_len += 1;
-	*cz_red_2q_len += 1;
-      }
-    }
-  }
-  matrix_cp(red_nf -> A1, A_aux, n);
-  decompose_GL_matrix(A_aux, CNOT_prod, n);
-  *cz_red_len += CNOT_prod -> len;
-  *cz_red_2q_len += CNOT_prod -> len;
-  for (r = 0; r < n; ++r) {
-    if (red_nf -> d[r]) {
-      *cz_red_len += 1;
-    }
-  }
-  for (r = 0; r < n; ++r) {
-    if (red_nf -> a[r]) {
-      *cz_red_len += 1;
-    }
-  }
-}
+
+

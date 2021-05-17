@@ -24,6 +24,25 @@ void initialize_nf(normal_form *nf) {
   }
 }
 
+
+void initialize_gs(graph_state *gs) {
+  long r, c;
+  long n = gs -> n;
+  for (r = 0; r < n; ++r) {
+    gs -> v[r] = 0;
+    for (c = 0; c < n; ++c) {
+      gs -> B[r][c] = 0;
+      gs -> B_red[r][c] = 0;
+      gs -> A[r][c] = 0;
+      gs -> A_inv[r][c] = 0;
+    }
+    gs -> A[r][r] = 1;
+    gs -> A_inv[r][r] = 1;
+  }
+}
+
+
+
 void initialize_PZX(PZX_form *PZX) {
   long r, c;
   long n = PZX -> n;
@@ -384,12 +403,13 @@ void merge_Yi_with_nf(long i, normal_form *nf, PZX_form *PZX, gate_prod *PZX_pro
   nf -> k = ((nf -> k) + 2) % 8; 
 } 
 
+  
 void simplify_nf(normal_form *nf) {
   long n = nf -> n;
   long r, c;
   int ok;
   for (r = 0; r < n; ++r) {
-    if (nf -> a[r] == 1 && nf -> d[r] == 0) {
+    if (nf -> a[r] == 1 && nf -> d[r] == 0 && nf -> u[r] == 0) {
       ok = 1;
       for(c = 0; c < n; ++c) {
 	if (nf -> D[r][c] != 0) {
@@ -404,81 +424,16 @@ void simplify_nf(normal_form *nf) {
     }
   }
 }
+  
 
-void simplify_red_nf(CZ_red_normal_form *red_nf) {
-  long n = red_nf -> n;
-  long r, c;
-  int ok;
-  for (r = 0; r < n; ++r) {
-    if (red_nf -> a[r] == 1  && red_nf -> d[r] == 0 && red_nf -> A1[r][r] == 1) {
-      ok = 1;
-      for(c = 0; c < n; ++c) {
-	if (c != r && (red_nf -> D_red[r][c] != 0 || red_nf -> A1[r][c] != 0 || red_nf -> A1[c][r] != 0)) {
-	  ok = 0;
-	  break;
-	}
-      }
-      if (ok) {
-	red_nf -> a[r] = 0;
-	red_nf -> w[r] = 0;
-      }
-    }
-  }
+void compute_gs(graph_state *gs, int **B_aux, gate_prod *CNOT_prod) {
+  long n = gs -> n;
+  matrix_cp(B_aux, gs -> B, n);
+  reduce_CZ(B_aux, CNOT_prod, n);
+  matrix_cp(B_aux, gs -> B_red, n);
+  compute_A(gs -> A, CNOT_prod, n);
+  compute_A_inv(gs -> A_inv, CNOT_prod, n);
+  compute_qB_of_A(gs -> B_red, gs -> A_inv, gs -> v, n);
 }
 
-void compute_red_nf(CZ_red_normal_form *red_nf, PZX_form *PZX, gate_prod *A_red_D_prod, gate_prod *A_red_B_prod, gate_prod *CNOT_prod, int **A_red_D_inv, int **A_red_B_inv, int **A_aux) {
-  long n = red_nf -> n;
-  long pos;
-  int vec[n];
-  /* computing w', b' and B' (see paper) */
-  initialize_PZX(PZX);
-  vector_cp(red_nf -> b, PZX -> b, n);
-  matrix_cp(red_nf -> B_red, PZX -> B, n); // B_red is matrix B of the normal form
-  matrix_cp(red_nf -> A2, PZX -> A, n); // A2 is matrix A of the normal form
-  matrix_cp(red_nf -> A2, A_aux, n);
-  decompose_GL_matrix(A_aux, CNOT_prod, n); // now CNOT_prod is A
-  invert_CNOT_prod(CNOT_prod); // now CNOT_prod is A^{-1}
-  C_to_PZX(CNOT_prod, PZX);
-  vector_cp(PZX -> b, red_nf -> b, n);
-  matrix_cp(PZX -> B, red_nf -> B_red, n);
-  /* computing v' (see paper) */
-  transpose_CNOT_prod(CNOT_prod, 0, CNOT_prod -> len - 1); // now CNOT_prod is A^{-T}
-  vector_cp(PZX -> v, vec, n);
-  mult_vec_by_CNOT_prod(vec, CNOT_prod); // vec is w' in the paper
-  vector_add(vec, red_nf -> v, n);
-  reduce_CZ(red_nf -> B_red, A_red_B_prod, n);
-  compute_A_inv(A_red_B_inv, A_red_B_prod, n);    
-  compute_qB_of_A(red_nf -> B_red, A_red_B_inv, vec, n);
-  mult_vec_by_CNOT_prod(vec, CNOT_prod); // vec is now A^{-T}*q_B_red(A_red_B^{-1})
-  vector_add(vec, red_nf -> v, n);
-  /* computing v from v' */
-  reduce_CZ(red_nf -> D_red, A_red_D_prod, n);
-  for (pos = 0; pos < A_red_D_prod -> len; ++pos) {
-    mult_vec_by_trans(red_nf -> v, A_red_D_prod -> g[pos].q_i, A_red_D_prod -> g[pos].q_j);
-  }
-  /* computing u' (see paper) */
-  compute_A_inv(A_red_D_inv, A_red_D_prod, n);
-  compute_qB_of_A(red_nf -> D_red, A_red_D_inv, vec, n); // vec is now q_D_red(A_red_D^{-1})
-  vector_add(vec, red_nf -> u, n);
-  /* computing u from u' */
-  for (pos = 0; pos < A_red_D_prod -> len; ++pos) {
-    mult_vec_by_trans(red_nf -> u, A_red_D_prod -> g[pos].q_j, A_red_D_prod -> g[pos].q_i);
-  }
-  /* computing A1 */
-  for (pos = A_red_D_prod -> len - 1; pos >= 0; -- pos) {
-    left_mult_by_trans(red_nf -> A1, A_red_D_prod -> g[pos].q_i, A_red_D_prod -> g[pos].q_j, n);
-  }
-  /* computing A2 */
-  for (pos = 0; pos < A_red_B_prod -> len; ++pos) {
-    right_mult_by_trans(red_nf -> A2, A_red_B_prod -> g[pos].q_i, A_red_B_prod -> g[pos].q_j, n);
-  }
-  for (pos = 0; pos < A_red_D_prod -> len; ++pos) {
-    left_mult_by_trans(red_nf -> A2, A_red_D_prod -> g[pos].q_j, A_red_D_prod -> g[pos].q_i, n);
-  }
-  /* computing A3 */
-  for (pos = 0; pos < A_red_B_prod -> len; ++pos) {
-    left_mult_by_trans(red_nf -> A3, A_red_B_prod -> g[pos].q_i, A_red_B_prod -> g[pos].q_j, n);
-  }
-  simplify_red_nf(red_nf);
-}
 

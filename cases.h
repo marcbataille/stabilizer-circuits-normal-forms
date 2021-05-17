@@ -1,9 +1,10 @@
 
-void initialize_PZX(PZX_form *PZX);
 
 void initialize_nf(normal_form *nf);
 
-void initialize_red_nf(CZ_red_normal_form *red_nf, normal_form *nf);
+void initialize_gs(graph_state *gs);
+
+void initialize_PZX(PZX_form *PZX);
 
 void C_to_PZX(gate_prod *PZX_prod, PZX_form *PZX);
 
@@ -37,6 +38,4 @@ void merge_Yi_with_nf(long i, normal_form *nf, PZX_form *PZX, gate_prod *PZX_pro
 
 void simplify_nf(normal_form *nf);
 
-void simplify_red_nf(CZ_red_normal_form *red_nf);
-
-void compute_red_nf(CZ_red_normal_form *red_nf, PZX_form *PZX, gate_prod *A_red_D_prod, gate_prod *A_red_B_prod, gate_prod *CNOT_prod, int **A_red_D_inv, int **A_red_B_inv, int **A_aux);
+void compute_gs(graph_state *gs, int **B_aux, gate_prod *CNOT_prod);

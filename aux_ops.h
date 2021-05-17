@@ -42,10 +42,6 @@ void pauli_conj_CZ(int *k, int *u, int *v, int **B, long n);
 
 void pauli_conj_h(int *u, int *v, long n);
 
-void count_gate_cz_red(CZ_red_normal_form *red_nf, gate_prod *CNOT_prod, int **A_aux, long *cz_red_len, long *cz_red_2q_len );
-
-void count_gate_nf(normal_form *nf, gate_prod *CNOT_prod, int **A_aux, long *nf_len, long *nf_2q_len );
-
 long decompose_GL_lower(int **A, gate_prod *CNOT_prod, long n);
 
 void decompose_GL_matrix(int **A, gate_prod *CNOT_prod, long n);
@@ -54,4 +50,8 @@ void compute_qB_of_A(int **B, int **A, int *vec, long n);
 
 void compute_A_inv(int **A_inv, gate_prod *A_prod, long n);
 
+void compute_A(int **A, gate_prod *A_prod, long n);
+
 void reduce_CZ(int **B, gate_prod *A_red_B_prod, long n);
+
+void count_gate_gs(graph_state *gs, gate_prod *CNOT_prod, int **A_aux, long *gs_2q_len );
