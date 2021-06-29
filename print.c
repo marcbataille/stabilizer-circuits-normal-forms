@@ -86,7 +86,7 @@ void print_normal_form(normal_form *nf) {
   long r, c;
   long offset = (n % 2) ? 0 : 1;
   printf("----------------------------------------------------------------------------------------------------------------------------\n");
-  printf("                  NORMAL FORM : exp(i*k*Pi/4) * H_a * Z_u * P_d * Z_D * H_w * Z_v * P_b * Z_B * X_A\n");
+  printf("                  NORMAL FORM : exp(i*k*Pi/4) * H_r * Z_u * P_d * Z_D * H_s * Z_v * P_b * Z_B * X_A\n");
   printf("----------------------------------------------------------------------------------------------------------------------------\n\n");
   if (n > MAX_PRINT_DIM) {
     printf("Sorry, matrices are too big to be printed.\n");
@@ -94,7 +94,7 @@ void print_normal_form(normal_form *nf) {
   else {
     printf("k");
     printf("   ");
-    printf("a");
+    printf("r");
     printf("   ");
     printf("u");
     printf("   ");
@@ -108,7 +108,7 @@ void print_normal_form(normal_form *nf) {
       printf("  ");
     }
     printf("   ");
-    printf("w");
+    printf("s");
     printf("   ");
     printf("v");
     printf("   ");
@@ -282,13 +282,13 @@ void print_circuit_nf(normal_form *nf, gate_prod *CNOT_prod, int **A_aux) {
 }
 
 
-void print_stabilizer_state(int *u, int *v, int *w, int **B, long n) {
+void print_stabilizer_state(int *a, int *u, int *d, int **D, long n) {
   int is_identity = 1;
   printf("\n---------------------------------------  STABILIZER STATE AND GRAPH STATE  ----------------------------------------\n");
   printf("\nThe stabilizer state |S> resulting from applying your circuit to the state |0...O> is |S> = H Z P |G> ,  where :\n\n");
   printf("H = ");
   for (long i = 0; i < n; ++i) {
-    if (u[i]) {
+    if (a[i]) {
       printf("H%ld ",i);
       is_identity = 0;
     }
@@ -299,7 +299,7 @@ void print_stabilizer_state(int *u, int *v, int *w, int **B, long n) {
   is_identity = 1;
   printf("\n\nZ = ");
   for (long i = 0; i < n; ++i) {
-    if (v[i]) {
+    if (u[i]) {
       printf("Z%ld ",i);
       is_identity = 0;
     }
@@ -310,7 +310,7 @@ void print_stabilizer_state(int *u, int *v, int *w, int **B, long n) {
   is_identity = 1;
   printf("\n\nP = ");
   for (long i = 0; i < n; ++i) {
-    if (w[i]) {
+    if (d[i]) {
       printf("P%ld ",i);
       is_identity = 0;
     }
@@ -322,7 +322,7 @@ void print_stabilizer_state(int *u, int *v, int *w, int **B, long n) {
   printf("\n\n|G> is the graph state corresponding to the graph G = { ");
   for (long i = 0; i < n; ++i) {
     for (long j = i + 1; j < n; ++j) {
-      if (B[i][j]) {
+      if (D[i][j]) {
 	printf("{%ld,%ld},",i,j);
       }
     }
@@ -330,7 +330,7 @@ void print_stabilizer_state(int *u, int *v, int *w, int **B, long n) {
   printf("\b }\n");
   if (n <= MAX_PRINT_DIM) {
   printf("\nThe adjacency matrix of G is : \n");
-  print_matrix(B,n);
+  print_matrix(D,n);
   }
 }
   

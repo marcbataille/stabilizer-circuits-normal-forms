@@ -27,16 +27,16 @@ struct PZX_form_t {
 };
 typedef struct PZX_form_t PZX_form;
 
-/* normal form of a stabilizer circuit :
+/* intermediate form of a stabilizer circuit :
    H_a * P_d * Z_D * H_w * exp(i*k*Pi/4) * x_u * z_v * P_b * Z_B * X_A */
 
 struct normal_form_t {
   long n;
-  int *a; // alpha in the paper
+  int *a; 
   int *d;
   int **D;
-  int *w; // omega in the paper
-  int k; // global phase phi is k*Pi/4
+  int *w;  // Omega in the paper
+  int k;   // global phase phi is k*Pi/4
   int *u;
   int *v;
   int *b;
